@@ -41,7 +41,7 @@ logger.addHandler(consoleLogHandler)
 
 
 # Setup CLI arguments
-parser = configargparse.ArgParser(default_config_files=[])
+parser = configargparse.ArgParser(default_config_files=["default.conf"])
 parser.add_argument(
     "mode",
     choices=MODES.keys(),
