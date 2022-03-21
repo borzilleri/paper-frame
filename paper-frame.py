@@ -105,7 +105,11 @@ def get_video_info(file_path):
     if file_path in VIDEO_INFO_LIST:
         info = VIDEO_INFO_LIST[file_path]
     else:
-        probe_info = ffmpeg.probe(str(file_path), select_streams="v")
+        try:
+            probe_info = ffmpeg.probe(str(file_path), select_streams="v")
+        except ffmpeg.Error as e:
+            logger.error(e)
+
         stream = probe_info["streams"][0]
         fps = float(Fraction(stream["avg_frame_rate"]))
         duration = float(probe_info["format"]["duration"])
