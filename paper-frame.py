@@ -109,6 +109,7 @@ def get_video_info(file_path):
             probe_info = ffmpeg.probe(str(file_path), select_streams="v")
         except ffmpeg.Error as e:
             logger.error(e)
+            exit(1)
 
         stream = probe_info["streams"][0]
         fps = float(Fraction(stream["avg_frame_rate"]))
