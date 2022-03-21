@@ -107,7 +107,7 @@ def get_video_info(file_path):
     if file_path in VIDEO_INFO_LIST:
         info = VIDEO_INFO_LIST[file_path]
     else:
-        logger.info(f"Retrieving info or file: {file_path}")
+        logger.info(f"Retrieving info for file: {file_path}")
         try:
             probe_info = ffmpeg.probe(str(file_path), select_streams="v")
         except ffmpeg.Error as e:
@@ -156,8 +156,8 @@ if args.resume and PROGRESS_FILE.is_file():
 else:
     ## Setup from args
     progress_log = {
-        "dir": None,
-        "file": None,
+        "dir": args.dir,
+        "file": args.file,
         "frame": 0,
         "random": args.random,
         "loop": args.loop
