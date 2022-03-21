@@ -138,7 +138,7 @@ def get_frame_from_video(in_file, out_file, time):
         .filter("scale", "iw*sar", "ih")
         .filter("scale", WIDTH, HEIGHT, force_original_aspect_ratio=1)
         .filter("pad", WIDTH, HEIGHT, -1, -1)
-        .overlay_filter()
+        #.overlay_filter()
         .output(out_file, vframes=1, copyts=None)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
