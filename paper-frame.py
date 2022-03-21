@@ -134,12 +134,12 @@ def get_video_info(file_path):
 
 def get_frame_from_video(in_file, out_file, time):
     (
-        ffmpeg.input(in_file, ss=time)
+        ffmpeg.input(str(in_file), ss=time)
         .filter("scale", "iw*sar", "ih")
         .filter("scale", WIDTH, HEIGHT, force_original_aspect_ratio=1)
         .filter("pad", WIDTH, HEIGHT, -1, -1)
         #.overlay_filter()
-        .output(out_file, vframes=1, copyts=None)
+        .output(str(out_file), vframes=1, copyts=None)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
