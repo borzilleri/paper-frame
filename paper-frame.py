@@ -65,8 +65,8 @@ parser.add_argument(
     help="In album or playlist modes, loop over files in the directory. In video mode loops the specified file."
 )
 parser.add_argument(
-    "-d", "--delay", type=int,
-    help="delay in seconds between screen updates. (dfeault: %(default)s"
+    "-w", "--wait", type=int, default=120,
+    help="wait in seconds between screen updates. (dfeault: %(default)s"
 )
 # TODO
 # frames-per-increment
