@@ -66,7 +66,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "-w", "--wait", type=int, default=120,
-    help="wait in seconds between screen updates. (dfeault: %(default)s"
+    help="wait in seconds between screen updates. (dfeault: %(default)s)"
 )
 # TODO
 # frames-per-increment
