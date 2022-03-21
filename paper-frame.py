@@ -108,7 +108,7 @@ def get_video_info(file_path):
         try:
             probe_info = ffmpeg.probe(str(file_path), select_streams="v")
         except ffmpeg.Error as e:
-            logger.error(e)
+            logger.error(e.stderr)
             exit(1)
 
         stream = probe_info["streams"][0]
