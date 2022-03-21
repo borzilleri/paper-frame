@@ -16,6 +16,7 @@ from PIL import Image, ImageEnhance
 from fractions import Fraction
 from omni_epd import displayfactory, EPDNotFoundError
 
+
 FRAME_TEMP_FILE = Path("/dev/shm/frame.bmp")
 PROGRESS_FILE=Path.home().joinpath(".paper-frame-data/progress_log.json")
 MODES = {"image": {}, "video": {}, "album": {}, "playlist": {}}
@@ -49,13 +50,14 @@ parser.add_argument(
 )
 parser.add_argument(
     "-d", "--dir", 
+    type=lambda p: Path(p).expanduser().absolute(),
     help="Directory to search for images or videos for the album and playlist display modes."
 )
 parser.add_argument(
     "-f", "--file",
+    type=lambda p: Path(p).expanduser().absolute(),
     help="Image or Video file to display, for those display modes."
 )
-
 parser.add_argument(
     "-r", "--random", action="store_true",
     help="In album or playlist mode, play files in a random orer."
@@ -105,6 +107,7 @@ def get_video_info(file_path):
     if file_path in VIDEO_INFO_LIST:
         info = VIDEO_INFO_LIST[file_path]
     else:
+        logger.info(f"Retrieving info or file: {file_path}")
         try:
             probe_info = ffmpeg.probe(str(file_path), select_streams="v")
         except ffmpeg.Error as e:
