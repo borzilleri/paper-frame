@@ -36,7 +36,7 @@ signal.signal(signal.SIGINT, exithandler)
 logger = logging.getLogger()
 consoleLogHandler = logging.StreamHandler(sys.stdout)
 consoleLogHandler.setFormatter(
-    logging.Formatter("[%(asctimes)s] %(levelname)-8s: %(module)s : %(message)s")
+    logging.Formatter("[%(asctime)s] %(levelname)-8s: %(module)s : %(message)s")
 )
 logger.addHandler(consoleLogHandler)
 
