@@ -3,16 +3,16 @@
 # Inspired by, and much of the code borrowed from:
 # https://github.com/TomWhitwell/SlowMovie
 
+from inspect import currentframe
 import signal
 import sys
 import configargparse
-import time
 from pprint import pformat
-from epdproxy import displayfactory, EPDNotFoundError
+from epdproxy import epdfactory
+from src import images, job, util, videos
 from src.log import logger, get_logging_level
-from src import util, video, progresslog
-from src.constants import MODES
-
+from src.constants import Mode
+from src.config import config
 
 def exithandler(signum, frame):
     try:
@@ -29,7 +29,7 @@ signal.signal(signal.SIGINT, exithandler)
 parser = configargparse.ArgParser(default_config_files=["default.conf"])
 parser.add_argument(
     "mode",
-    choices=MODES.keys(),
+    choices=[m.name.lower() for m in Mode],
     help="Display mode, single image, single video, album of images, or playlsit of videos",
 )
 parser.add_argument(
@@ -70,7 +70,12 @@ parser.add_argument(
     action="store_true",
     help="Attempt to resume and continue a previous execution, defaults to mode parameter if no previous execution found",
 )
-parser.add_argument("-e", "--epd", help="Name of epaper display driver to use.")
+parser.add_argument(
+    "-C",
+    "--clear",
+    action="store_true",
+    help="Clear the display when program exits. Not applicable to normal exit in IMAGE mode."
+)
 parser.add_argument(
     "-o",
     "--loglevel",
@@ -85,50 +90,34 @@ logger.debug(pformat(args))
 
 # Set up e-paper display
 try:
-    epd = displayfactory.load_display_driver(args.epd)
-except EPDNotFoundError:
-    validEpds = displayfactory.list_supported_displays()
-    logger.error("f'{args.epd}' is not a valid e-paper display name, valid names are:")
-    logger.error("\n".join(map(str, validEpds)))
+    epd = epdfactory.load_epd(config.EpdDriver)
+except Exception as e:
+    logger.error("Exiting with exception.", exc_info=e)
     sys.exit(1)
 
-
-def display_image():
-    print("displaying image")
-
-
 ### If mode=resume, load progerss log and continue
-progress_log = progresslog.load(args.resume, args.mode, args.dir, args.file, args.random, args.loop)
-## Load our next video
-video_info = video.get_video_info(str(progress_log.path))
+current_job = job.build_job(args.resume, args.mode, args.dir, args.file, args.random, args.loop)
 
-while video_info is not None and progress_log.frame <= video_info["frame_count"]:
-    time_start = time.perf_counter()
+if current_job.mode == Mode.IMAGE:
+    logger.info(f"Displaying single image: {str(current_job.file)}")
+    # Simply load & display our iamge.
+    img = images.load_image(current_job.file)
     epd.prepare()
+    epd.display(images)
+elif current_job.mode == Mode.VIDEO:
+    logger.info(f"Playing single video: {str(current_job.file)}")
+    # Read our video info, then display it.
+    video_info = videos.get_video_info(str(current_job.file))
+    videos.display_video(epd, current_job, video_info, args.wait)
+elif current_job.mode == Mode.ALBUM:
+    logger.info(f"Displaying images from directory: {str(current_job.dir)}")
+    logger.error(f"{current_job.mode.name} not yet implemented.")
+elif current_job.mode == Mode.PLAYLIST:
+    logger.info(f"Playing videos from directory: {str(current_job.dir)}")
+    logger.error(f"{current_job.mode.name} not yet implemented.")
 
-    timecode_ms = f"{int(progress_log.frame * video_info['frame_time'])}ms"
+if current_job.mode != Mode.IMAGE and args.clear:
+    logger.info("Clearing display.")
+    epd.clear()
 
-    image = video.get_frame_from_video(str(progress_log.path), epd.width, epd.height, timecode_ms)
-    if image is not None:
-        logger.debug(
-            f"Displaying frame {progress_log.frame} of {progress_log.path} ({(progress_log.frame/video_info['frame_count'])*100:.1f}%)"
-        )
-        epd.display(image)
-    else:
-        logger.error(
-            f"Unable to retrieve frame for {progress_log.path} : {timecode_ms}"
-        )
-
-    # Increment our frame
-    progress_log.frame += 1
-    if progress_log.frame > video_info["frame_count"] and progress_log.loop:
-        # We're past the end of the file, and we're looping.
-        progress_log.frame = 0
-
-    # If we get here, we just write our progress log and continue.
-    progresslog.save(progress_log)
-
-    # Sleep until our next iteration.
-    epd.sleep()
-    time_diff = time.perf_counter() - time_start
-    time.sleep(max(args.wait - time_diff, 0))
+logger.info("Program run finished.")

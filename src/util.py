@@ -1,7 +1,7 @@
-import configargparse
 import json
-
 from pathlib import Path
+
+import configargparse
 
 from .constants import VALID_VIDEO_TYPES
 
