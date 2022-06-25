@@ -33,16 +33,9 @@ parser.add_argument(
     help="Display mode, single image, single video, album of images, or playlsit of videos",
 )
 parser.add_argument(
-    "-d",
-    "--dir",
-    type=util.validate_dir,
-    help="Directory to search for images or videos for the album and playlist display modes.",
-)
-parser.add_argument(
-    "-f",
-    "--file",
-    type=util.validate_file,
-    help="Image or Video file to display, for those display modes.",
+    "path",
+    type=util.validate_path_type,
+    help="Directory to search for album or playlist modes, or file to play for image or video modes."
 )
 parser.add_argument(
     "-r",
@@ -84,6 +77,7 @@ parser.add_argument(
     help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)",
 )
 args = parser.parse_args()
+util.validate_path_and_mode(args.mode, args.path)
 
 logger.setLevel(get_logging_level(args.loglevel))
 logger.debug(pformat(args))
@@ -96,24 +90,24 @@ except Exception as e:
     sys.exit(1)
 
 ### If mode=resume, load progerss log and continue
-current_job = job.build_job(args.resume, args.mode, args.dir, args.file, args.random, args.loop)
+current_job = job.build_job(args.resume, args.mode, args.path, args.random, args.loop)
 
 if current_job.mode == Mode.IMAGE:
-    logger.info(f"Displaying single image: {str(current_job.file)}")
+    logger.info(f"Displaying single image: {str(current_job.path)}")
     # Simply load & display our iamge.
-    img = images.load_image(current_job.file)
+    img = images.load_image(current_job.path)
     epd.prepare()
     epd.display(images)
 elif current_job.mode == Mode.VIDEO:
-    logger.info(f"Playing single video: {str(current_job.file)}")
+    logger.info(f"Playing single video: {str(current_job.path)}")
     # Read our video info, then display it.
-    video_info = videos.get_video_info(str(current_job.file))
+    video_info = videos.get_video_info(str(current_job.path))
     videos.display_video(epd, current_job, video_info, args.wait)
 elif current_job.mode == Mode.ALBUM:
-    logger.info(f"Displaying images from directory: {str(current_job.dir)}")
+    logger.info(f"Displaying {len(current_job.files)} images from directory: {str(current_job.path)}")
     logger.error(f"{current_job.mode.name} not yet implemented.")
 elif current_job.mode == Mode.PLAYLIST:
-    logger.info(f"Playing videos from directory: {str(current_job.dir)}")
+    logger.info(f"Playing  {len(current_job.files)} videos from directory: {str(current_job.path)}")
     logger.error(f"{current_job.mode.name} not yet implemented.")
 
 if current_job.mode != Mode.IMAGE and args.clear:

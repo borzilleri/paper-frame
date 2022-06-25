@@ -1,47 +1,28 @@
 import json
 from pathlib import Path
 
-import configargparse
+from configargparse import ArgumentTypeError
 
-from .constants import VALID_VIDEO_TYPES
+from .constants import VALID_IMAGE_TYPES, VALID_VIDEO_TYPES, Mode
 
 
-def validate_file(value):
+def validate_path_type(value) -> Path:
     path = Path(value).expanduser().absolute()
-    if not path.is_file():
-        raise configargparse.ArgumentTypeError(
-            f"File '{value}' does not exist or is not a file."
-        )
-    if path.suffix not in VALID_VIDEO_TYPES:
-        raise configargparse.ArgumentTypeError(
-            f"File '{value}' should be a file with one of the following supported extensions: {', '.join(VALID_VIDEO_TYPES)}"
-        )
+    if not path.is_file() and not path.is_dir():
+        raise ArgumentTypeError(f"Path '{value}' must be a valid file or directory.")
     return path
 
 
-def validate_dir(value: Path):
-    path = Path(value).expanduser().absolute()
-    if path.is_dir():
-        return path
-    else:
-        raise configargparse.ArgumentTypeError(
-            f"Directory '{value}' does not exist or is not a directory."
+def validate_path_and_mode(mode: Mode, value: Path) -> None:
+    if mode in (Mode.ALBUM, Mode.PLAYLIST) and not value.is_dir():
+        raise ArgumentTypeError(
+            f"Path '{value}' must be a directory for mode {mode.name}"
         )
-
-
-class CustomJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Path):
-            return {"_type": "Path", "path": str(obj)}
-        return json.JSONEncoder.default(self, obj)
-
-
-class CustomJsonDecoder(json.JSONDecoder):
-    def __init__(self, *args, **kwargs):
-        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
-
-    def object_hook(self, obj):
-        if "_type" in obj:
-            if obj["_type"] == "Path":
-                return Path(obj["path"])
-        return obj
+    if mode == Mode.IMAGE and value.suffix not in VALID_IMAGE_TYPES:
+        raise ArgumentTypeError(
+            f"Path '{value}' must be a file with a supported extension: {', '.join(VALID_IMAGE_TYPES)}"
+        )
+    if mode == Mode.VIDEO and value.suffix not in VALID_VIDEO_TYPES:
+        raise ArgumentTypeError(
+            f"Path '{value}' must be a file with a supported extension: {', '.join(VALID_VIDEO_TYPES)}"
+        )

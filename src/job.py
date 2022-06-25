@@ -1,50 +1,69 @@
 import json
 from pathlib import Path
-
+import random
 from .config import config
-from .constants import Mode
+from .constants import VALID_VIDEO_TYPES, Mode
 from .log import logger
 
 STATE_FILE = Path(config.ProgramStatePath)
 
+
 class Job:
-    def __init__(self, mode: str, dir: Path, file: Path, frame: int, random: bool, loop: bool):
+    def __init__(
+        self,
+        mode: str,
+        path: str,
+        files: list = list(),
+        index: int = 0,
+        frame: int = 0,
+        loop: bool = False,
+    ):
         self.mode = Mode[mode.upper()]
-        self.dir = dir
-        self.file = file
+        self.path = Path(path)
+        self.files = [Path(p) for p in files]
+        self.index = index
         self.frame = frame
-        self.random = random
         self.loop = loop
 
     def __str__(self):
-        return f"ProgressLog(mode='{self.mode.name}', dir='{self.dir}', file='{self.file}' frame={self.frame}, random={self.random}, loop={self.loop})"
+        return f"ProgressLog(mode='{self.mode.name}', path='{self.path}', files='{len(self.files)} files', index={self.index}, frame={self.frame}, loop={self.loop})"
 
     def toJson(self):
         return {
             "mode": self.mode.name,
-            "dir": str(self.dir),
-            "file": str(self.file),
+            "path": str(self.path),
+            "files": [str(p) for p in self.files],
+            "index": self.index,
             "frame": self.frame,
-            "random": self.random,
             "loop": self.loop,
         }
-    
+
     def save(self):
         with STATE_FILE.open("w") as f:
             json.dump(self.toJson(), f)
-    
+
     def getNextPathItem() -> Path:
         return None
 
-def build_job(resume: bool, mode: Mode, dir: Path, file: Path, random: bool, loop: bool) -> Job:
+
+def build_job(
+    resume: bool, mode: Mode, path: Path, random_order: bool, loop: bool
+) -> Job:
     log = None
     if resume and STATE_FILE.is_file():
         with STATE_FILE.open("r") as f:
             data = json.load(f)
-            data['dir'] = Path(data['dir'])
-            data['file'] = Path(data['file'])
             log = Job(**data)
     else:
-        log = Job(mode, dir, file, 0, random, loop)
+        files = list()
+        if mode in (Mode.ALBUM, Mode.PLAYLIST):
+            files = [
+                f
+                for f in path.iterdir()
+                if f.is_file() and f.suffix in VALID_VIDEO_TYPES
+            ]
+            if random_order:
+                random.shuffle(files)
+        log = Job(mode=mode, path=path, files=files, index=0, frame=0, loop=loop)
     logger.debug(f"Configured playback\n{log}")
     return log

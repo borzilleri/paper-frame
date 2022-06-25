@@ -84,14 +84,14 @@ def display_video(epd: EPD, job: Job, video: VideoInfo, wait: int):
 
         timecode_ms = f"{int(job.frame * video.frame_time)}ms"
 
-        img = get_frame_from_video(str(job.file), epd.width, epd.height, timecode_ms)
+        img = get_frame_from_video(str(job.path), epd.width, epd.height, timecode_ms)
         if img is not None:
             logger.debug(
-                f"Displaying frame {job.frame} of {job.file} ({(job.frame/video.frame_count)*100:.1f}%)"
+                f"Displaying frame {job.frame} of {job.path} ({(job.frame/video.frame_count)*100:.1f}%)"
             )
             epd.display(img)
         else:
-            logger.error(f"Unable to retrieve frame for {job.file} : {timecode_ms}")
+            logger.error(f"Unable to retrieve frame for {job.path} : {timecode_ms}")
 
         # Increment our frame
         job.frame += 1
