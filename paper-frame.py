@@ -1,9 +1,8 @@
-#
+# Paper Frame - video/image display software for e-ink screens
 
 # Inspired by, and much of the code borrowed from:
 # https://github.com/TomWhitwell/SlowMovie
 
-from inspect import currentframe
 import signal
 import sys
 import configargparse
@@ -11,7 +10,7 @@ from pprint import pformat
 from epdproxy import epdfactory
 from src import images, job, util, videos
 from src.log import logger, get_logging_level
-from src.constants import Mode
+from src.constants import Mode, DEFAULT_CONFIG_PATH
 from src.config import config
 
 def exithandler(signum, frame):
@@ -70,6 +69,11 @@ parser.add_argument(
     help="Clear the display when program exits. Not applicable to normal exit in IMAGE mode."
 )
 parser.add_argument(
+    "--config",
+    default=DEFAULT_CONFIG_PATH,
+    help="Path to config json file."
+)
+parser.add_argument(
     "-o",
     "--loglevel",
     default="INFO",
@@ -77,6 +81,7 @@ parser.add_argument(
     help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)",
 )
 args = parser.parse_args()
+
 util.validate_path_and_mode(args.mode, args.path)
 
 logger.setLevel(get_logging_level(args.loglevel))
