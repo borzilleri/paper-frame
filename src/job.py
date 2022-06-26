@@ -5,8 +5,6 @@ from .config import config
 from .constants import VALID_VIDEO_TYPES, Mode
 from .log import logger
 
-STATE_FILE = Path(config.ProgramStatePath)
-
 
 class Job:
     def __init__(
@@ -39,7 +37,7 @@ class Job:
         }
 
     def save(self):
-        with STATE_FILE.open("w") as f:
+        with Path(config.ProgramStatePath).open("w") as f:
             json.dump(self.toJson(), f)
 
     def getNextPathItem() -> Path:
@@ -50,8 +48,9 @@ def build_job(
     resume: bool, mode: Mode, path: Path, random_order: bool, loop: bool
 ) -> Job:
     log = None
-    if resume and STATE_FILE.is_file():
-        with STATE_FILE.open("r") as f:
+    state_file = Path(config.ProgramStatePath)
+    if resume and state_file.is_file():
+        with state_file.open("r") as f:
             data = json.load(f)
             log = Job(**data)
     else:

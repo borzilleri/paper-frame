@@ -11,7 +11,7 @@ from epdproxy import epdfactory
 from src import images, job, util, videos
 from src.log import logger, get_logging_level
 from src.constants import Mode, DEFAULT_CONFIG_PATH
-from src.config import config
+from src.config import init_config, config
 
 def exithandler(signum, frame):
     try:
@@ -81,7 +81,7 @@ parser.add_argument(
     help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)",
 )
 args = parser.parse_args()
-
+init_config(args.config)
 util.validate_path_and_mode(args.mode, args.path)
 
 logger.setLevel(get_logging_level(args.loglevel))

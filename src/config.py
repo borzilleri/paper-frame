@@ -14,7 +14,7 @@ class Config:
 config = Config()
 
 
-def init(config_path: str):
+def init_config(config_path: str):
     new_path = Path(config_path).expanduser().absolute()
     if new_path.is_file():
         CONFIG_FILE = new_path

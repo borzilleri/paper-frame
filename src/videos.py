@@ -13,7 +13,6 @@ from .job import Job
 from .log import logger
 
 VIDEO_INFO_LIST = []
-__FRAME_TEMP_FILE = Path(config.FrameTempPath)
 
 
 class VideoInfo:
@@ -55,6 +54,7 @@ def get_video_info(file_path_str: str) -> VideoInfo:
 def get_frame_from_video(
     input_path_str: str, width: int, height: int, time: str
 ) -> Image:
+    frame_temp_file = Path(config.FrameTempPath)
     try:
         (
             ffmpeg.input(input_path_str, ss=time)
@@ -62,11 +62,11 @@ def get_frame_from_video(
             .filter("scale", width, height, force_original_aspect_ratio=1)
             .filter("pad", width, height, -1, -1)
             # .overlay_filter()
-            .output(str(__FRAME_TEMP_FILE), vframes=1, copyts=None)
+            .output(str(frame_temp_file), vframes=1, copyts=None)
             .overwrite_output()
             .run(quiet=True)
         )
-        return load_image(__FRAME_TEMP_FILE)
+        return load_image(frame_temp_file)
     except ffmpeg.Error as e:
         logger.error(e.stderr)
     return None
