@@ -1,0 +1,30 @@
+# File path to media to load.
+# May be an individual file or a directory containing multiple media files.
+# Required
+# String
+media_path = '/path/to/media'
+
+# When multiple media files are present, play them in a random order
+# Optional
+# Boolean
+random = false
+
+# Loop playback
+# Optional
+# Boolean
+loop = false
+
+# Seconds to wait before displaying the next image
+# Optional
+# Integer
+wait_seconds = 30
+
+# Resume in-progress playback when program restarts
+# Optional
+# Boolean
+resume_playback = false
+
+# Clear Display when playback completes
+# Optional
+# Boolean
+clear_display = true

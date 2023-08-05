@@ -1,0 +1,18 @@
+# Path to the program state file
+# This is used to store the running state of the program,
+# so it can be resumed on startup
+ProgramStatePath = "/path/to/program_state.json"
+
+# Path to a temporary frame file.
+# The application rendrs frames to this temporary file
+# before displaing them to the ePaper Display
+FrameTempPath = "/tmp/frame.bmp"
+
+# ePaper Display Driver
+# Be sure you have the correct driver library installed.
+# If this driver is not found, a dummy EPD will be used that logs to the console
+EpdDriver = "waveshare_epd.epd7in5_V2"
+
+# Logging Level
+# DEBUG, INFO, WARN, ERROR, FATAL
+LogLevel = "INFO"

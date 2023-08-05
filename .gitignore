@@ -1,3 +1,5 @@
 .vscode
 *.pyc
 test_files
+config.toml
+playlist.toml
