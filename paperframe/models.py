@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 from typing import Any, Dict, Generator, List
 
@@ -92,6 +93,8 @@ class Playlist:
             self.__index += 1
         if self.config.loop:
             self.__index = 0
+            if self.config.random:
+                random.shuffle(self.__files)
 
     def in_progress(self) -> bool:
         return self.__index < len(self.__files)
