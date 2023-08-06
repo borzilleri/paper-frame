@@ -11,6 +11,7 @@ from .config import Config
 from .log import LOG
 from .models import Playlist, PlaylistDefinition
 
+__PLAYLIST_DEFINITION_FILE = "playlist.toml"
 __PLAYLIST_SAVE_FILE = "playlist-save.json"
 
 
@@ -24,6 +25,7 @@ def __load_save() -> Optional[Playlist]:
     save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
     print(str(save_file))
     if not save_file.is_file():
+        LOG.info("no save data found.")
         return None
     with save_file.open("r") as f:
         data: Dict[str, Any] = json.load(f)
@@ -31,7 +33,11 @@ def __load_save() -> Optional[Playlist]:
         LOG.warn("malformed save data: config data missing or malformed.")
         return None
     playlist = Playlist(**data)
-    return playlist
+    if playlist.config.resume_playback and playlist.in_progress():
+        LOG.info("Found in progress save data with 'resume_playback=true'")
+        return playlist
+    LOG.info("Save found, but playlist was complete, or 'resume_playback=false'")
+    return None
 
 
 def load_media(media_path: Path, random_order: bool) -> List[str]:
@@ -49,16 +55,12 @@ def load_media(media_path: Path, random_order: bool) -> List[str]:
     return media_list
 
 
-def init_playlist(playlist_path: str) -> Playlist:
+def init_playlist(playlist_path: str | None) -> Playlist:
     save_data = __load_save()
-    if (
-        save_data is not None
-        and save_data.config.resume_playback
-        and save_data.in_progress()
-    ):
-        LOG.info("Found save data with 'resume_playback=true'")
+    if save_data is not None:
         return save_data
-    LOG.info("No save data found, or playlist was complete, or 'resume_playback=false'")
+    if playlist_path is None:
+        playlist_path = str(Path(Config.data_dir, __PLAYLIST_DEFINITION_FILE))
     pl_def_data = util.load_toml(playlist_path)
     playlist_def = PlaylistDefinition(**pl_def_data)
     LOG.debug(f"loaded playlist definition: {playlist_def}")

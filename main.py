@@ -7,7 +7,6 @@ import paperframe
 from paperframe import LOG, Config
 
 DEFAULT_CONFIG_PATH = "config.toml"
-DEFAULT_PLAYLIST_PATH = "playlist.toml"
 
 __epd: Optional[epdproxy.EPD]
 
@@ -34,7 +33,6 @@ def get_cli_args():
     )
     parser.add_argument(
         "--playlist",
-        default=DEFAULT_PLAYLIST_PATH,
         help="Path to the playlist config TOML file.",
     )
     return parser.parse_args()
