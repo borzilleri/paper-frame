@@ -4,7 +4,7 @@ import sys
 from typing import Any, Optional
 import epdproxy
 import paperframe
-from paperframe import LOG, config
+from paperframe import LOG, Config
 
 DEFAULT_CONFIG_PATH = "config.toml"
 DEFAULT_PLAYLIST_PATH = "playlist.toml"
@@ -44,12 +44,12 @@ if __name__ == "__main__":
     init_signal_handlers()
     args = get_cli_args()
     paperframe.init_config(args.config)
-    paperframe.init_logger(config.LogLevel)
-    LOG.debug(config)
+    paperframe.init_logger(Config.log_level)
+    LOG.debug(Config.to_str())
 
     # Set up e-paper display
     try:
-        __epd = epdproxy.epdfactory.load_epd(config.EpdDriver)
+        __epd = epdproxy.epdfactory.load_epd(Config.epd, LOG.getEffectiveLevel())
     except Exception as e:
         LOG.error("Exiting with exception.", exc_info=e)
         sys.exit(1)

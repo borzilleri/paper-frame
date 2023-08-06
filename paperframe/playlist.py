@@ -3,71 +3,35 @@ import random
 import time
 from pathlib import Path
 from PIL import Image
-from typing import Dict, List, Optional, Generator
+from typing import Any, Dict, List, Optional
 
 from epdproxy import EPD
 from . import util, images, videos
-from .config import config
+from .config import Config
 from .log import LOG
+from .models import Playlist, PlaylistDefinition
+
+__PLAYLIST_SAVE_FILE = "playlist-save.json"
 
 
-class PlaylistConfig:
-    media_path: str
-    wait_seconds: int = 30
-    random: bool = False
-    loop: bool = False
-    resume_playback: bool = False
-    clear_display: bool = True
-
-    def __init__(self) -> None:
-        pass
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(media_path='{self.media_path}', wait_seconds='{self.wait_seconds}', random='{self.random}', loop='{self.loop}', resume_playback='{self.resume_playback}', clear_display='{self.clear_display}')"
-
-    def to_json(self) -> Dict[str, object]:
-        return vars(self)
+def __create_save(playlist: Playlist):
+    save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
+    with save_file.open("w") as f:
+        json.dump(playlist.to_json(), f)
 
 
-class Playlist:
-    config: PlaylistConfig
-    files: List[str] = list()
-    __index: int = 0
-    frame: int = 0
-
-    def __init__(
-        self,
-        config: PlaylistConfig,
-        files: List[str] = list(),
-        index: int = 0,
-        frame: int = 0,
-    ):
-        self.config = config
-        self.files = files
-        self.__index = index
-        self.frame = frame
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(files={len(self.files)} files, index={self.__index}, frame={self.frame}, config={self.config})"
-
-    def to_json(self) -> Dict[str, object]:
-        return {
-            "config": self.config.to_json(),
-            "files": self.files,
-            "index": self.__index,
-            "frame": self.frame,
-        }
-
-    def iter(self) -> Generator[Path, None, None]:
-        while self.__index < len(self.files):
-            yield Path(self.files[self.__index])
-            self.__index += 1
-        if self.config.loop:
-            self.__index = 0
-
-    def save(self):
-        with Path(config.ProgramStatePath).open("w") as f:
-            json.dump(self.to_json(), f)
+def __load_save() -> Optional[Playlist]:
+    save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
+    print(str(save_file))
+    if not save_file.is_file():
+        return None
+    with save_file.open("r") as f:
+        data: Dict[str, Any] = json.load(f)
+    if data["config"] is None or not isinstance(data["config"], dict):
+        LOG.warn("malformed save data: config data missing or malformed.")
+        return None
+    playlist = Playlist(**data)
+    return playlist
 
 
 def load_media(media_path: Path, random_order: bool) -> List[str]:
@@ -86,9 +50,20 @@ def load_media(media_path: Path, random_order: bool) -> List[str]:
 
 
 def init_playlist(playlist_path: str) -> Playlist:
-    config: PlaylistConfig = util.load_config_to_object(playlist_path, PlaylistConfig())
-    files: List[str] = load_media(Path(config.media_path), config.random)
-    return Playlist(config, files=files)
+    save_data = __load_save()
+    if (
+        save_data is not None
+        and save_data.config.resume_playback
+        and save_data.in_progress()
+    ):
+        LOG.info("Found save data with 'resume_playback=true'")
+        return save_data
+    LOG.info("No save data found, or playlist was complete, or 'resume_playback=false'")
+    pl_def_data = util.load_toml(playlist_path)
+    playlist_def = PlaylistDefinition(**pl_def_data)
+    LOG.debug(f"loaded playlist definition: {playlist_def}")
+    playlist_files = load_media(Path(playlist_def.media_path), playlist_def.random)
+    return Playlist(playlist_def, files=playlist_files)
 
 
 def __play_media_files(playlist: Playlist, epd: EPD):
@@ -113,14 +88,14 @@ def __play_media_files(playlist: Playlist, epd: EPD):
         if image is not None:
             epd.prepare()
             epd.display(image)
-        playlist.save()
+        __create_save(playlist)
         epd.sleep()
         time_diff = time.perf_counter() - time_start
         time.sleep(max(playlist.config.wait_seconds - time_diff, 0))
 
 
 def start_playback(playlist: Playlist, epd: EPD):
-    if len(playlist.files) == 0:
+    if len(playlist) == 0:
         raise Exception("Playlist is empty, cannot start playback.")
     while True:
         __play_media_files(playlist, epd)
