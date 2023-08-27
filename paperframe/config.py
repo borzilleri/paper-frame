@@ -4,10 +4,12 @@ from .util import load_toml
 
 
 class Config:
+    __DEFAULT_PLAYLIST = str(Path(Path.cwd(), "playlist.toml"))
     __DEFAULT_EPD = FAKE_EPD_DRIVER
     __DEFAULT_DATA_DIR = str(Path.cwd())
     __DEFAULT_LOG_LEVEL = "INFO"
 
+    playlist: str = __DEFAULT_PLAYLIST
     epd: str = __DEFAULT_EPD
     data_dir: str = __DEFAULT_DATA_DIR
     log_level: str = __DEFAULT_LOG_LEVEL
@@ -15,6 +17,7 @@ class Config:
     @classmethod
     def to_str(cls) -> str:
         return f"""{cls.__name__}(
+            playlist='{cls.playlist}',
             epd='{cls.epd}',
             data_dir='{str(cls.data_dir)}',
             log_level='{cls.log_level}'

@@ -52,6 +52,7 @@ if __name__ == "__main__":
         LOG.error("Exiting with exception.", exc_info=e)
         sys.exit(1)
 
-    playlist = paperframe.init_playlist(args.playlist)
+    playlist_file = args.playlist if args.playlist is not None else Config.playlist
+    playlist = paperframe.init_playlist(playlist_file)
     LOG.debug(f"Loaded playlist: {playlist}")
     paperframe.start_playback(playlist, __epd)
