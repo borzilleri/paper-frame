@@ -1,7 +1,5 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
-INPUT="/Volumes/Media/Movies/Star Wars - Episode IV - A New Hope (1977)/Star Wars (1977) WEBDL-2160p.mkv"
-OUTPUT="/Users/jonathan/Downloads/star_wars.mkv"
+OUT_FILE=$(basename $1)
 
-ffmpeg -i "$INPUT" -filter:v scale=800:-1 -an "$OUTPUT"
-
+ffmpeg -i "$1" -filter:v scale=800:-1 -an "$HOME/Downloads/$OUT_FILE"
