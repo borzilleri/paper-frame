@@ -1,37 +1,36 @@
 import random
 from pathlib import Path
-from typing import Any, Dict, Generator, List
+from typing import Any, Dict, Generator, List, Optional
 
 
 class PlaylistDefinition:
-    __wait = 30
-    __random = False
-    __loop = False
-    __resume = False
-    __clear = True
+    __default_wait = 30
+    __default_random = False
+    __default_loop = False
+    __default_resume = False
 
     media_path: str
     wait_seconds: int
     random: bool
     loop: bool
     resume_playback: bool
-    clear_display: bool
+    clear_image: Optional[str]
 
     def __init__(
         self,
         media_path: str,
-        wait_seconds: int = __wait,
-        random: bool = __random,
-        loop: bool = __loop,
-        resume_playback: bool = __resume,
-        clear_display: bool = __clear,
+        wait_seconds: int = __default_wait,
+        random: bool = __default_random,
+        loop: bool = __default_loop,
+        resume_playback: bool = __default_resume,
+        clear_image: Optional[str] = None,
     ):
         self.media_path = media_path
         self.wait_seconds = wait_seconds
         self.random = random
         self.loop = loop
         self.resume_playback = resume_playback
-        self.clear_display = clear_display
+        self.clear_image = clear_image
 
     def __str__(self) -> str:
         return f"""{self.__class__.__name__}(
@@ -40,7 +39,7 @@ class PlaylistDefinition:
             random='{self.random}', 
             loop='{self.loop}', 
             resume_playback='{self.resume_playback}', 
-            clear_display='{self.clear_display}'
+            clear_image='{self.clear_image}'
         )"""
 
     def to_json(self) -> Dict[str, object]:
@@ -52,6 +51,7 @@ class Playlist:
     __files: List[str]
     __index: int
     frame: int
+    frame_count: int
 
     def __init__(
         self,
@@ -59,6 +59,7 @@ class Playlist:
         files: List[str] = list(),
         index: int = 0,
         frame: int = 0,
+        frame_count: int = 1,
     ):
         if isinstance(config, PlaylistDefinition):
             self.config = config
@@ -67,12 +68,14 @@ class Playlist:
         self.__files = files
         self.__index = index
         self.frame = frame
+        self.frame_count = frame_count
 
     def __str__(self) -> str:
         return f"""{self.__class__.__name__}(
             files={len(self.__files)} files, 
             index={self.__index}, 
-            frame={self.frame}, 
+            frame={self.frame},
+            frame_count{self.frame_count},
             config={self.config}
         )"""
 
@@ -85,16 +88,18 @@ class Playlist:
             "files": self.__files,
             "index": self.__index,
             "frame": self.frame,
+            "frame_count": self.frame_count,
         }
 
     def iter(self) -> Generator[Path, None, None]:
         while self.__index < len(self.__files):
-            yield Path(self.__files[self.__index])
+            while self.frame < self.frame_count:
+                yield Path(self.__files[self.__index])
+                self.frame += 1
+            self.frame = 0
+            self.frame_count = 1
             self.__index += 1
         if self.config.loop:
             self.__index = 0
             if self.config.random:
                 random.shuffle(self.__files)
-
-    def in_progress(self) -> bool:
-        return self.__index < len(self.__files)

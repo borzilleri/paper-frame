@@ -19,12 +19,14 @@ loop = false
 # Integer
 wait_seconds = 30
 
-# Resume in-progress playback when program restarts
+# Attempt to resume in-progress playback.
+# Playback will only resume if the loaded playlist config (this file) matches
+# the saved playlist definition.
 # Optional
 # Boolean
-resume_playback = false
+resume_playback = true
 
-# Clear Display when playback completes
+# Path an image to display when the playlist finishes.
 # Optional
-# Boolean
-clear_display = true
+# String
+clear_image = "/path/to/image.png"
