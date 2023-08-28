@@ -1,0 +1,29 @@
+{
+  // File path to media to load.
+  // May be an individual file or a directory containing multiple media files.
+  // Required
+  // String
+  "media_path": "/path/to/media",
+  // When multiple media files are present, play them in a random order
+  // Optional
+  // Boolean
+  "random": false,
+  // Loop playback
+  // Optional
+  // Boolean
+  "loop": false,
+  // Seconds to wait before displaying the next image
+  // Optional
+  // Integer
+  "wait_seconds": 30,
+  // Attempt to resume in-progress playback.
+  // Playback will only resume if the loaded playlist config (this file) matches
+  // the saved playlist definition.
+  // Optional
+  // Boolean
+  "resume_playback": true,
+  // Path an image to display when the playlist finishes.
+  // Optional
+  // String
+  "clear_image": "/path/to/image.png",
+}

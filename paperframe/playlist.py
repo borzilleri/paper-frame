@@ -8,26 +8,25 @@ from typing import Any, Dict, List, Optional
 from epdproxy import EPD
 from . import util, images, videos
 from .config import Config
+from .constants import PLAYLIST_DEFINITION_FILE, PLAYLIST_SAVE_FILE
 from .log import LOG
 from .models import Playlist, PlaylistDefinition
 
-__PLAYLIST_DEFINITION_FILE = "playlist.toml"
-__PLAYLIST_SAVE_FILE = "playlist-save.json"
 
 
 def __create_save(playlist: Playlist):
-    save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
+    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
     with save_file.open("w") as f:
         json.dump(playlist.to_json(), f)
 
 
 def __clear_save():
-    save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
+    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
     save_file.unlink()
 
 
 def __load_save() -> Optional[Playlist]:
-    save_file = Path(Config.data_dir, __PLAYLIST_SAVE_FILE)
+    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
     print(str(save_file))
     if not save_file.is_file():
         LOG.info("no save data found.")
@@ -59,8 +58,8 @@ def load_media(media_path: Path, random_order: bool) -> List[str]:
 
 def __read_playlist_file(playlist_path: Optional[str]) -> PlaylistDefinition:
     if playlist_path is None:
-        playlist_path = str(Path(Config.data_dir, __PLAYLIST_DEFINITION_FILE))
-    pl_def_data = util.load_toml(playlist_path)
+        playlist_path = str(Path(Config.data_dir, PLAYLIST_DEFINITION_FILE))
+    pl_def_data = util.load_config(playlist_path)
     playlist_def = PlaylistDefinition(**pl_def_data)
     LOG.debug(f"loaded playlist definition: {playlist_def}")
     return playlist_def

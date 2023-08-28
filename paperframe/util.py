@@ -1,4 +1,4 @@
-import tomllib
+import json
 from pathlib import Path
 from typing import Any, Dict
 
@@ -17,9 +17,9 @@ def is_valid_media(f: Path) -> bool:
     return is_image(f) or is_video(f)
 
 
-def load_toml(file_path: str) -> Dict[str, Any]:
+def load_config(file_path: str) -> Dict[str, Any]:
     real_path: Path = Path(file_path).expanduser().absolute()
     if not real_path.is_file():
         raise Exception(f"Playlist file is not readable: {real_path}")
     with real_path.open("rb") as f:
-        return tomllib.load(f)
+        return json.load(f)

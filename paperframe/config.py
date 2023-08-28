@@ -1,18 +1,12 @@
-from pathlib import Path
-from epdproxy import FAKE_EPD_DRIVER
-from .util import load_toml
+from . import constants
+from .util import load_config
 
 
 class Config:
-    __DEFAULT_PLAYLIST = str(Path(Path.cwd(), "playlist.toml"))
-    __DEFAULT_EPD = FAKE_EPD_DRIVER
-    __DEFAULT_DATA_DIR = str(Path.cwd())
-    __DEFAULT_LOG_LEVEL = "INFO"
-
-    playlist: str = __DEFAULT_PLAYLIST
-    epd: str = __DEFAULT_EPD
-    data_dir: str = __DEFAULT_DATA_DIR
-    log_level: str = __DEFAULT_LOG_LEVEL
+    playlist: str = constants.DEFAULT_PLAYLIST
+    epd: str = constants.DEFAULT_EPD
+    data_dir: str = constants.DEFAULT_DATA_DIR
+    log_level: str = constants.DEFAULT_LOG_LEVEL
 
     @classmethod
     def to_str(cls) -> str:
@@ -25,6 +19,6 @@ class Config:
 
 
 def init_config(config_path: str):
-    data = load_toml(config_path)
+    data = load_config(config_path)
     for k, v in data.items():
         setattr(Config, k, v)

@@ -6,7 +6,7 @@ import epdproxy
 import paperframe
 from paperframe import LOG, Config
 
-DEFAULT_CONFIG_PATH = "config.toml"
+DEFAULT_CONFIG_PATH = "config.json"
 
 __epd: Optional[epdproxy.EPD]
 
@@ -29,11 +29,11 @@ def get_cli_args():
     parser.add_argument(
         "--config",
         default=DEFAULT_CONFIG_PATH,
-        help="Path to config TOML file.",
+        help="Path to config JSON file.",
     )
     parser.add_argument(
         "--playlist",
-        help="Path to the playlist config TOML file.",
+        help="Path to the playlist config JSON file.",
     )
     return parser.parse_args()
 

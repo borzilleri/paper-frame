@@ -2,5 +2,7 @@
 *.pyc
 test_files
 config.toml
+config.json
 playlist.toml
+playlist.json
 playlist-save.json
