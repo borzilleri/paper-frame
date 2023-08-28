@@ -87,7 +87,7 @@ def __play_media_files(playlist: Playlist, epd: EPD):
         time_start = time.perf_counter()
         image: Optional[Image.Image] = None
         if util.is_image(current_file):
-            image = images.load_image(current_file)
+            image = images.load_image(current_file, epd.width, epd.height)
         if util.is_video(current_file):
             info: Optional[videos.VideoInfo] = videos.get_video_info(current_file)
             if info is None:
@@ -108,7 +108,9 @@ def __play_media_files(playlist: Playlist, epd: EPD):
 
 def __clear_display(epd: EPD, clear_image: Optional[str]):
     if clear_image is not None:
-        image = images.load_image(Path(clear_image).expanduser().absolute())
+        image = images.load_image(
+            Path(clear_image).expanduser().absolute(), epd.width, epd.height
+        )
         if image is not None:
             LOG.debug(f"Displaying clear image: {clear_image}")
             epd.prepare()
