@@ -69,7 +69,6 @@ class fakeEpdFactory:
 
 def load_epd(driver_name: str, log_level: int) -> EPD:
     logger.setLevel(log_level)
-    print(logger.getEffectiveLevel())
     displayfactory: Any = fakeEpdFactory()
     try:
         displayfactory = importlib.import_module("omni_epd.displayfactory")
