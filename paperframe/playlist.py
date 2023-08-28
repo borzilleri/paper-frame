@@ -13,21 +13,21 @@ from .log import LOG
 from .models import Playlist, PlaylistDefinition
 
 
+def __get_savefile() -> Path:
+    return Path(Config.data_dir, PLAYLIST_SAVE_FILE).expanduser().absolute()
+
 
 def __create_save(playlist: Playlist):
-    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
-    with save_file.open("w") as f:
+    with __get_savefile().open("w") as f:
         json.dump(playlist.to_json(), f)
 
 
 def __clear_save():
-    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
-    save_file.unlink()
+    __get_savefile().unlink()
 
 
 def __load_save() -> Optional[Playlist]:
-    save_file = Path(Config.data_dir, PLAYLIST_SAVE_FILE)
-    print(str(save_file))
+    save_file = __get_savefile()
     if not save_file.is_file():
         LOG.info("no save data found.")
         return None
@@ -58,7 +58,9 @@ def load_media(media_path: Path, random_order: bool) -> List[str]:
 
 def __read_playlist_file(playlist_path: Optional[str]) -> PlaylistDefinition:
     if playlist_path is None:
-        playlist_path = str(Path(Config.data_dir, PLAYLIST_DEFINITION_FILE))
+        playlist_path = str(
+            Path(Config.data_dir, PLAYLIST_DEFINITION_FILE).expanduser().absolute()
+        )
     pl_def_data = util.load_config(playlist_path)
     playlist_def = PlaylistDefinition(**pl_def_data)
     LOG.debug(f"loaded playlist definition: {playlist_def}")
@@ -74,7 +76,9 @@ def init_playlist(playlist_path: Optional[str]) -> Playlist:
         if save_data.config.to_json() == playlist_def.to_json():
             # They match, so return our saved data.
             return save_data
-    playlist_files = load_media(Path(playlist_def.media_path), playlist_def.random)
+    playlist_files = load_media(
+        Path(playlist_def.media_path).expanduser().absolute(), playlist_def.random
+    )
     return Playlist(playlist_def, files=playlist_files)
 
 
@@ -104,7 +108,7 @@ def __play_media_files(playlist: Playlist, epd: EPD):
 
 def __clear_display(epd: EPD, clear_image: Optional[str]):
     if clear_image is not None:
-        image = images.load_image(Path(clear_image))
+        image = images.load_image(Path(clear_image).expanduser().absolute())
         if image is not None:
             LOG.debug(f"Displaying clear image: {clear_image}")
             epd.prepare()
