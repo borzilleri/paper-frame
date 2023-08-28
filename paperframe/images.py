@@ -8,7 +8,7 @@ from .log import LOG
 def load_image(image_path: Path, width: int, height: int) -> Optional[Image.Image]:
     try:
         img: Optional[Image.Image] = Image.open(image_path)
-        img = ImageOps.contain(img, (width, height))
+        img = ImageOps.pad(img, (width, height))
         LOG.debug(f"Loaded image {str(image_path)}")
         return img
     except Exception as e:
