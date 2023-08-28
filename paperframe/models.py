@@ -55,7 +55,7 @@ class Playlist:
 
     def __init__(
         self,
-        config: PlaylistDefinition | Dict[str, Any],
+        config: Any,
         files: List[str] = list(),
         index: int = 0,
         frame: int = 0,
