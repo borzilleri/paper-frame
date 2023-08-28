@@ -100,8 +100,8 @@ def __play_media_files(playlist: Playlist, epd: EPD):
         if image is not None:
             epd.prepare()
             epd.display(image)
+            epd.sleep()
         __create_save(playlist)
-        epd.sleep()
         time_diff = time.perf_counter() - time_start
         time.sleep(max(playlist.config.wait_seconds - time_diff, 0))
 
@@ -115,11 +115,11 @@ def __clear_display(epd: EPD, clear_image: Optional[str]):
             LOG.debug(f"Displaying clear image: {clear_image}")
             epd.prepare()
             epd.display(image)
+            epd.sleep()
             return
         else:
             LOG.warn(f"Unable to load clear image: {clear_image}")
-    LOG.debug("Clearing EPD display")
-    epd.clear()
+    LOG.debug("Playlist complete.")
 
 
 def start_playback(playlist: Playlist, epd: EPD):
