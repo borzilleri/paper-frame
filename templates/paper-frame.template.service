@@ -1,0 +1,14 @@
+[Unit]
+Description=Paper Frame - E-Paper Slow Image Player
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/paper-frame
+ExecStart=/home/pi/paper-frame/start.sh
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
